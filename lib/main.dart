@@ -29,10 +29,26 @@ class PayCalculator extends StatelessWidget {
             FocusScope.of(context).unfocus();
           },
           child: Container(
-            padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
+            padding: EdgeInsets.fromLTRB(0, 20, 0, 10),
             alignment: Alignment.topCenter,
             child: Column(
               children: [
+                Text(
+                  "Name: Harsimran Singh",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  "Student Id: 30150053",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 Text(
                   "Please enter your details",
                   style: TextStyle(
@@ -63,6 +79,7 @@ class _FormInputs extends State<FormInputs> {
   double? _overTimePay;
   double? _totalPay;
   double? _tax;
+  String _warningMessage = '';
 
   final TextEditingController _hoursController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
@@ -72,24 +89,52 @@ class _FormInputs extends State<FormInputs> {
     final double hours = double.tryParse(_hoursController.text) ?? 0;
     final double rate = double.tryParse(_rateController.text) ?? 0;
 
-    setState(() {
-      if (hours <= 40) {
-        _totalPay = hours * rate;
-        _regularPay = hours * rate;
-        _overTimePay = 0.0;
-      } else {
-        _totalPay = (hours - 40) * rate * 1.5 + 40 * rate;
-        _regularPay = 40 * rate;
-        _overTimePay = (hours - 40) * rate * 1.5;
-        // _regularPay = hours * rate;
-      }
-      // _regularPay = hours * rate; // Regular pay calculation
-      // _overTimePay = hours > 40
-      //     ? (hours - 40) * (rate * 1.5)
-      //     : 0; // Overtime pay calculation
-      // _totalPay = (_regularPay ?? 0) + (_overTimePay ?? 0); // Total pay
-      _tax = _totalPay! * 0.18;
-    });
+    if (_hoursController.text.isEmpty || _rateController.text.isEmpty) {
+      setState(() {
+        _warningMessage = "All Fields are Mandatory";
+        _regularPay = null;
+        _overTimePay = null;
+        _totalPay = null;
+        _tax = null;
+      });
+      return;
+    }
+
+    if (hours > 90 || hours < 1) {
+      setState(() {
+        _warningMessage =
+            "Please enter valid values: Hours should be between 1 and 90";
+        _regularPay = null;
+        _overTimePay = null;
+        _totalPay = null;
+        _tax = null;
+      });
+      return;
+    } else if (rate > 100 || rate < 5) {
+      setState(() {
+        _warningMessage =
+            "Please enter valid values: Rates should be between 5 and 100";
+        _regularPay = null;
+        _overTimePay = null;
+        _totalPay = null;
+        _tax = null;
+      });
+      return;
+    } else {
+      setState(() {
+        if (hours <= 40) {
+          _totalPay = hours * rate;
+          _regularPay = hours * rate;
+          _overTimePay = 0.0;
+        } else {
+          _totalPay = (hours - 40) * rate * 1.5 + 40 * rate;
+          _regularPay = 40 * rate;
+          _overTimePay = (hours - 40) * rate * 1.5;
+        }
+        _tax = _totalPay! * 0.18;
+      });
+      _warningMessage = "";
+    }
   }
 
   @override
@@ -136,6 +181,14 @@ class _FormInputs extends State<FormInputs> {
               ],
             ),
             const SizedBox(height: 20),
+            if (_warningMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  _warningMessage,
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
             Center(
               child: ElevatedButton(
                 onPressed: _calculatePay,
@@ -240,12 +293,12 @@ class CustomCard extends StatefulWidget {
   final Color amountColor;
 
   const CustomCard({
-    Key? key,
+    super.key,
     required this.text,
     required this.amount,
     required this.cardColor,
     required this.amountColor,
-  }) : super(key: key);
+  });
 
   @override
   _CustomCardState createState() => _CustomCardState();
